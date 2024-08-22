@@ -3,15 +3,15 @@ encoding_model: cl100k_base
 skip_workflows: []
 llm:
   api_key: ${GRAPHRAG_API_KEY}
-  type: openai_chat # or azure_openai_chat
-  model: gpt-4-turbo-preview
+  type:  azure_openai_chat # or openai_chat
+  model: gpt-4o-mini
   model_supports_json: true # recommended if this is available for your model.
   # max_tokens: 4000
   # request_timeout: 180.0
-  # api_base: https://<instance>.openai.azure.com
-  # api_version: 2024-02-15-preview
+  api_base: https://theraflow-openai.openai.azure.com/openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-02-15-preview
+  api_version: 2024-02-15-preview
   # organization: <organization_id>
-  # deployment_name: <azure_model_deployment_name>
+  deployment_name: gpt-4o-mini
   # tokens_per_minute: 150_000 # set a leaky bucket throttle
   # requests_per_minute: 10_000 # set a leaky bucket throttle
   # max_retries: 10
@@ -33,12 +33,12 @@ embeddings:
   async_mode: threaded # or asyncio
   llm:
     api_key: ${GRAPHRAG_API_KEY}
-    type: openai_embedding # or azure_openai_embedding
-    model: text-embedding-3-small
-    # api_base: https://<instance>.openai.azure.com
-    # api_version: 2024-02-15-preview
+    type:  azure_openai_embedding # or openai_embedding
+    model: text-embedding-ada-002
+    api_base: https://theraflow-openai.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2023-05-15
+    # api_version: 2023-05-15
     # organization: <organization_id>
-    # deployment_name: <azure_model_deployment_name>
+    deployment_name: text-embedding-ada-002
     # tokens_per_minute: 150_000 # set a leaky bucket throttle
     # requests_per_minute: 10_000 # set a leaky bucket throttle
     # max_retries: 10
@@ -52,8 +52,8 @@ embeddings:
 
 
 chunks:
-  size: 1200
-  overlap: 100
+  size: 300
+  overlap: 25
   group_by_columns: [id] # by default, we don't allow chunks to cross documents
     
 input:
