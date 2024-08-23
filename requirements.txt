@@ -1,0 +1,6 @@
+graphrag==0.2.1
+pandas==2.2.2
+python-dotenv==1.0.1
+streamlit==1.37.0
+tiktoken==0.7.0
+altair<5
