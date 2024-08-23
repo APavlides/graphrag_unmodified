@@ -9,16 +9,19 @@ from graphrag.query.structured_search.global_search.community_context import (
     GlobalCommunityContext,
 )
 from graphrag.query.structured_search.global_search.search import GlobalSearch
+import streamlit as st
 
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+# load_dotenv()
 
-async def main(question: str, mock = True):
-    
-    if mock: 
-        result = {"response": """## Summary of Treatment Received by John Doe
+
+async def main(question: str, mock=True):
+
+    if mock:
+        result = {
+            "response": """## Summary of Treatment Received by John Doe
 
                             John Doe has undergone a comprehensive treatment plan aimed at managing his anxiety and depression. A significant component of his therapy has been Cognitive Behavioral Therapy (CBT), which focuses on altering negative thought patterns to improve his mental health [Data: Reports (1, 0, +more)].
 
@@ -26,18 +29,21 @@ async def main(question: str, mock = True):
 
                             To ensure continuous support, John has been scheduled for weekly therapy sessions. These sessions are crucial for monitoring his mental health and fostering a sense of stability in his life [Data: Reports (0, +more)].
 
-                            ### Family and Academic Support"""}
+                            ### Family and Academic Support"""
+        }
 
-    else: 
-        api_key = os.environ["GRAPHRAG_API_KEY"]
-        llm_model = os.environ["GRAPHRAG_LLM_MODEL"]
+    else:
+        # api_key = os.environ["GRAPHRAG_API_KEY"]
+        # llm_model = os.environ["GRAPHRAG_LLM_MODEL"]
+        api_key = st.secrets["GRAPHRAG_API_KEY"]
+        llm_model = st.secrets["GRAPHRAG_LLM_MODEL"]
 
         llm = ChatOpenAI(
             api_key=api_key,
             model=llm_model,
-            api_type=OpenaiApiType.AzureOpenAI, # OpenaiApiType.OpenAI or OpenaiApiType.OpenAI 
-            api_base='https://theraflow-openai.openai.azure.com/openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-02-15-preview',
-            api_version='2024-02-15-preview',
+            api_type=OpenaiApiType.AzureOpenAI,  # OpenaiApiType.OpenAI or OpenaiApiType.OpenAI
+            api_base="https://theraflow-openai.openai.azure.com/openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-02-15-preview",
+            api_version="2024-02-15-preview",
             max_retries=20,
         )
 
@@ -55,10 +61,14 @@ async def main(question: str, mock = True):
 
         entity_df = pd.read_parquet(f"{INPUT_DIR}/{ENTITY_TABLE}.parquet")
         report_df = pd.read_parquet(f"{INPUT_DIR}/{COMMUNITY_REPORT_TABLE}.parquet")
-        entity_embedding_df = pd.read_parquet(f"{INPUT_DIR}/{ENTITY_EMBEDDING_TABLE}.parquet")
+        entity_embedding_df = pd.read_parquet(
+            f"{INPUT_DIR}/{ENTITY_EMBEDDING_TABLE}.parquet"
+        )
 
         reports = read_indexer_reports(report_df, entity_df, COMMUNITY_LEVEL)
-        entities = read_indexer_entities(entity_df, entity_embedding_df, COMMUNITY_LEVEL)
+        entities = read_indexer_entities(
+            entity_df, entity_embedding_df, COMMUNITY_LEVEL
+        )
         print(f"Total report count: {len(report_df)}")
         print(
             f"Report count after filtering by community level {COMMUNITY_LEVEL}: {len(reports)}"
@@ -110,7 +120,7 @@ async def main(question: str, mock = True):
         )
 
         result = await search_engine.asearch(question)
-    
+
     return result
 
     # print(result.response)
@@ -120,6 +130,7 @@ async def main(question: str, mock = True):
 
     # # inspect number of LLM calls and tokens
     # print(f"LLM calls: {result.llm_calls}. LLM tokens: {result.prompt_tokens}")
+
 
 # Run the async main function
 # import asyncio

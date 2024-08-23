@@ -67,19 +67,19 @@ if tab == "Search Documents":
             st.session_state.messages.append({"role": "user", "content": q})
 
             # response = get_cached_response(prompt)
-            output = "This is just a test"
+            # output = "This is just a test"
 
-            # try:
-            #     with st.spinner("Model is working on it..."):
-            #         result = get_cached_response(question=q)
-            #         output = result.response
-            #         # st.subheader(f":blue[{i}]")
-            #         # st.write(reponse.response)
-            # except Exception as e:
-            #     st.error(f"An error occurred: {e}")
-            #     st.error(
-            #         "Oops, the GPT response resulted in an error :( Please try again with a different question."
-            #     )
+            try:
+                with st.spinner("Model is working on it..."):
+                    result = get_cached_response(question=q)
+                    output = result.response
+                    # st.subheader(f":blue[{i}]")
+                    # st.write(reponse.response)
+            except Exception as e:
+                st.error(f"An error occurred: {e}")
+                st.error(
+                    "Oops, the GPT response resulted in an error :( Please try again with a different question."
+                )
             # Display assistant response in chat message container
             with st.chat_message("assistant"):
                 st.markdown(output)
@@ -94,19 +94,19 @@ if tab == "Search Documents":
         st.session_state.messages.append({"role": "user", "content": prompt})
 
         # response = get_cached_response(prompt)
-        output = "This is just a test"
+        # output = "This is just a test"
 
-        # try:
-        #     with st.spinner("Model is working on it..."):
-        #         result = get_cached_response(question=prompt)
-        #         output = result.response
-        #         # st.subheader(f":blue[{i}]")
-        #         # st.write(reponse.response)
-        # except Exception as e:
-        #     st.error(f"An error occurred: {e}")
-        #     st.error(
-        #         "Oops, the GPT response resulted in an error :( Please try again with a different question."
-        #     )
+        try:
+            with st.spinner("Model is working on it..."):
+                result = get_cached_response(question=prompt)
+                output = result.response
+                # st.subheader(f":blue[{i}]")
+                # st.write(reponse.response)
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
+            st.error(
+                "Oops, the GPT response resulted in an error :( Please try again with a different question."
+            )
 
         # Display assistant response in chat message container
         with st.chat_message("assistant"):
