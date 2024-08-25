@@ -52,8 +52,8 @@ embeddings:
 
 
 chunks:
-  size: 300
-  overlap: 25
+  size: 50
+  overlap: 5
   group_by_columns: [id] # by default, we don't allow chunks to cross documents
     
 input:
