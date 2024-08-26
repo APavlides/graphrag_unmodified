@@ -11,13 +11,13 @@ from graphrag.query.structured_search.global_search.community_context import (
 from graphrag.query.structured_search.global_search.search import GlobalSearch
 import streamlit as st
 
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
 # Load environment variables from .env file
-# load_dotenv()
+load_dotenv()
 
 
-async def main(question: str, mock=True):
+async def execute_global_query(question: str, mock=True):
 
     if mock:
         result = {
@@ -33,10 +33,10 @@ async def main(question: str, mock=True):
         }
 
     else:
-        # api_key = os.environ["GRAPHRAG_API_KEY"]
-        # llm_model = os.environ["GRAPHRAG_LLM_MODEL"]
-        api_key = st.secrets["GRAPHRAG_API_KEY"]
-        llm_model = st.secrets["GRAPHRAG_LLM_MODEL"]
+        api_key = os.environ["GRAPHRAG_API_KEY"]
+        llm_model = os.environ["GRAPHRAG_LLM_MODEL"]
+        # api_key = st.secrets["GRAPHRAG_API_KEY"]
+        # llm_model = st.secrets["GRAPHRAG_LLM_MODEL"]
 
         llm = ChatOpenAI(
             api_key=api_key,
@@ -50,7 +50,7 @@ async def main(question: str, mock=True):
         token_encoder = tiktoken.get_encoding("cl100k_base")
 
         # parquet files generated from indexing pipeline
-        INPUT_DIR = "./output/20240819-202022/artifacts"
+        INPUT_DIR = "./output/20240825-115048/artifacts"
         COMMUNITY_REPORT_TABLE = "create_final_community_reports"
         ENTITY_TABLE = "create_final_nodes"
         ENTITY_EMBEDDING_TABLE = "create_final_entities"
@@ -136,3 +136,28 @@ async def main(question: str, mock=True):
 # import asyncio
 # result = asyncio.run(main(question="Provide a short summary of the treatment this patient has received in the past.", mock=True))
 # print(result)
+
+if __name__ == "__main__":
+    import argparse
+    import asyncio
+
+    # Define the parser
+    parser = argparse.ArgumentParser(description="run a global query")
+
+    # Declare an argument (`--algo`), saying that the
+    # corresponding value should be stored in the `algo`
+    # field, and using a default value if the argument
+    # isn't given
+    parser.add_argument(
+        "--question",
+        action="store",
+        dest="question",
+        default="What is the patient's name?",
+    )
+
+    # Now, parse the command line arguments and store the
+    # values in the `args` variable
+    args = parser.parse_args()
+    print(args.question)
+    result = asyncio.run(execute_global_query(question=args.question, mock=False))
+    print(result.response)

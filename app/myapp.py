@@ -1,6 +1,6 @@
 import streamlit as st
 
-from query import main
+from global_query import execute_global_query
 import asyncio
 import os
 
@@ -18,7 +18,7 @@ txt_files = [f for f in os.listdir(TEXT_FILES_DIR) if f.endswith(".txt")]
 # Cache the main function's response using the st.cache_data decorator
 @st.cache_data(show_spinner=False)
 def get_cached_response(question):
-    return asyncio.run(main(question=question, mock=False))
+    return asyncio.run(execute_global_query(question=question, mock=False))
 
 
 # Tab selector
