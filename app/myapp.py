@@ -1,6 +1,7 @@
 import streamlit as st
 
 from global_query import execute_global_query
+from local_query import execute_local_query
 import asyncio
 import os
 
@@ -17,8 +18,13 @@ txt_files = [f for f in os.listdir(TEXT_FILES_DIR) if f.endswith(".txt")]
 
 # Cache the main function's response using the st.cache_data decorator
 @st.cache_data(show_spinner=False)
-def get_cached_response(question):
+def get_cached_global_response(question):
     return asyncio.run(execute_global_query(question=question, mock=False))
+
+
+@st.cache_data(show_spinner=False)
+def get_cached_local_response(question):
+    return asyncio.run(execute_local_query(question=question, mock=False))
 
 
 # Tab selector
@@ -29,6 +35,9 @@ if tab == "Search Documents":
 
     # Adding a title to the main area
     st.title("Q&A Patient History")
+
+    # Graphrag search type
+    search_type = st.sidebar.radio("Type of Search", ["Global", "Local"])
 
     # Initialize chat history
     if "messages" not in st.session_state:
@@ -53,25 +62,34 @@ if tab == "Search Documents":
         #                "What is the patient's condition history.",
         #                "What does the patient want?"]
         user_q_list = [
-            "What drugs has the patient been prescribed previously if known",
-            "What treatment has the patient received previously.",
-            "What is the age, or data of birth (DOB), of the patient if known",
+            (
+                "What drugs has the patient been prescribed previously if known",
+                "Global",
+            ),
+            ("What treatment has the patient received previously.", "Global"),
+            (
+                "What is the age, or data of birth (DOB), of the patient if known",
+                "Local",
+            ),
         ]
 
         for q in user_q_list:
 
             # Display user message in chat message container
             with st.chat_message("user"):
-                st.markdown(q)
+                st.markdown(q[0])
             # Add user message to chat history
-            st.session_state.messages.append({"role": "user", "content": q})
+            st.session_state.messages.append({"role": "user", "content": q[0]})
 
             # response = get_cached_response(prompt)
             # output = "This is just a test"
 
             try:
                 with st.spinner("Model is working on it..."):
-                    result = get_cached_response(question=q)
+                    if q[1] == "Global":
+                        result = get_cached_global_response(question=q[0])
+                    elif q[1] == "Local":
+                        result = get_cached_local_response(question=q[0])
                     output = result.response
                     # st.subheader(f":blue[{i}]")
                     # st.write(reponse.response)
@@ -98,7 +116,11 @@ if tab == "Search Documents":
 
         try:
             with st.spinner("Model is working on it..."):
-                result = get_cached_response(question=prompt)
+                if search_type == "Global":
+                    result = get_cached_global_response(question=q)
+                elif search_type == "Local":
+                    result = get_cached_local_response(question=q)
+
                 output = result.response
                 # st.subheader(f":blue[{i}]")
                 # st.write(reponse.response)
