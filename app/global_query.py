@@ -116,7 +116,7 @@ async def execute_global_query(question: str, mock=True):
             json_mode=True,  # set this to False if your LLM model does not support JSON mode.
             context_builder_params=context_builder_params,
             concurrent_coroutines=32,
-            response_type="single paragraph per question",  # free form text describing the response type and format, can be anything, e.g. prioritized list, single paragraph, multiple paragraphs, multiple-page report
+            response_type="single paragraph",  # free form text describing the response type and format, can be anything, e.g. prioritized list, single paragraph, multiple paragraphs, multiple-page report
         )
 
         result = await search_engine.asearch(question)

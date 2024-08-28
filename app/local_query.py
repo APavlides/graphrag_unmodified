@@ -173,7 +173,7 @@ async def execute_local_query(question: str, mock=True):
         token_encoder=token_encoder,
         llm_params=llm_params,
         context_builder_params=local_context_params,
-        response_type="single paragraph or sentence if that is sufficient",  # free form text describing the response type and format, can be anything, e.g. prioritized list, single paragraph, multiple paragraphs, multiple-page report
+        response_type="single paragraph",  # free form text describing the response type and format, can be anything, e.g. prioritized list, single paragraph, multiple paragraphs, multiple-page report
     )
 
     result = await search_engine.asearch(question)

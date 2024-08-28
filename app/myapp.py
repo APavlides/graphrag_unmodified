@@ -18,13 +18,13 @@ txt_files = [f for f in os.listdir(TEXT_FILES_DIR) if f.endswith(".txt")]
 
 # Cache the main function's response using the st.cache_data decorator
 @st.cache_data(show_spinner=False)
-def get_cached_global_response(question):
-    return asyncio.run(execute_global_query(question=question, mock=False))
+def get_cached_global_response(question_str):
+    return asyncio.run(execute_global_query(question=question_str, mock=False))
 
 
 @st.cache_data(show_spinner=False)
-def get_cached_local_response(question):
-    return asyncio.run(execute_local_query(question=question, mock=False))
+def get_cached_local_response(question_str):
+    return asyncio.run(execute_local_query(question=question_str, mock=False))
 
 
 # Tab selector
@@ -53,43 +53,32 @@ if tab == "Search Documents":
 
         # Init questions
 
-        # user_q_list = ["What drugs has the patient been prescribed previously if known",
-        #                "What is the age of the patient if known",
-        #                "Who does the patient live with if known",
-        #                "What is their early development history if known i.e. traumas, significant events, what school they went to.",
-        #                "Why is the patient coming to the clinic?",
-        #                "Have social services been involved or has the patient had other early help",
-        #                "What is the patient's condition history.",
-        #                "What does the patient want?"]
-        user_q_list = [
-            (
-                "What drugs has the patient been prescribed previously if known",
-                "Global",
-            ),
-            ("What treatment has the patient received previously.", "Global"),
-            (
-                "What is the age, or data of birth (DOB), of the patient if known",
-                "Local",
-            ),
-        ]
+        user_q_list = [{"question": "What is the patient's name, age and date of birth, if known?", "type": "local"},
+                       {"question": "Who does the patient live with if known", "type": "local"}]#,
+                    #    {"question": "What is the patient's early development history if known i.e. traumas, significant events, what school they went to.", "type": "global"},
+                    #    {"question": "Why is the patient coming to the clinic?", "type": "global"},
+                    #    {"question": "Have social services been involved or has the patient had other early help", "type": "global"},
+                    #    {"question": "What is the patient's condition history.", "type": "global"},
+                    #    {"question": "What drugs has the patient been prescribed previously if known", "type": "local"},
+                    #    {"question": "What does the patient want?", "type": "global"} ]
 
         for q in user_q_list:
 
             # Display user message in chat message container
             with st.chat_message("user"):
-                st.markdown(q[0])
+                st.markdown(q["question"])
             # Add user message to chat history
-            st.session_state.messages.append({"role": "user", "content": q[0]})
+            st.session_state.messages.append({"role": "user", "content": q["question"]})
 
             # response = get_cached_response(prompt)
             # output = "This is just a test"
 
             try:
                 with st.spinner("Model is working on it..."):
-                    if q[1] == "Global":
-                        result = get_cached_global_response(question=q[0])
-                    elif q[1] == "Local":
-                        result = get_cached_local_response(question=q[0])
+                    if q["type"] == "global":
+                        result = get_cached_global_response(question_str=q["question"])
+                    elif q["type"] == "local":
+                        result = get_cached_local_response(question_str=q["question"])
                     output = result.response
                     # st.subheader(f":blue[{i}]")
                     # st.write(reponse.response)
@@ -104,12 +93,12 @@ if tab == "Search Documents":
             # Add assistant response to chat history
             st.session_state.messages.append({"role": "assistant", "content": output})
 
-    if prompt := st.chat_input("Ask additional questions..."):
+    if additional_q := st.chat_input("Ask additional questions..."):
         # Display user message in chat message container
         with st.chat_message("user"):
-            st.markdown(prompt)
+            st.markdown(additional_q)
         # Add user message to chat history
-        st.session_state.messages.append({"role": "user", "content": prompt})
+        st.session_state.messages.append({"role": "user", "content": additional_q})
 
         # response = get_cached_response(prompt)
         # output = "This is just a test"
@@ -117,9 +106,9 @@ if tab == "Search Documents":
         try:
             with st.spinner("Model is working on it..."):
                 if search_type == "Global":
-                    result = get_cached_global_response(question=q)
+                    result = get_cached_global_response(question_str=additional_q)
                 elif search_type == "Local":
-                    result = get_cached_local_response(question=q)
+                    result = get_cached_local_response(question_str=additional_q)
 
                 output = result.response
                 # st.subheader(f":blue[{i}]")
@@ -136,31 +125,137 @@ if tab == "Search Documents":
         # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": output})  #
 
-    # Function to format the chat history into a string
-    def format_messages_for_text(messages):
-        formatted = []
-        for msg in messages:
-            role = "User" if msg["role"] == "user" else "Assistant"
-            content = msg["content"]
-            formatted.append(f"{role}: {content}")
-        return "\n".join(formatted)
+    # # Function to format the chat history into a string
+    # def format_messages_for_text(messages):
+    #     formatted = []
+    #     for msg in messages:
+    #         role = "User" if msg["role"] == "user" else "Assistant"
+    #         content = msg["content"]
+    #         formatted.append(f"{role}: {content}")
+    #     return "\n".join(formatted)
 
-    # Format messages for the text file
+    # # Format messages for the text file
+    # if st.session_state.messages:
+    #     messages_str = format_messages_for_text(st.session_state.messages)
+
+    #     # Convert the string to bytes
+    #     messages_bytes = messages_str.encode("utf-8")
+
+    #     # Create a download button for the text file
+    #     st.sidebar.download_button(
+    #         label="Download Chat History as Text File",
+    #         data=messages_bytes,
+    #         file_name="chat_history.txt",
+    #         mime="text/plain",
+    #     )
+    # else:
+    #     st.write("No messages stored yet.")
+    import streamlit as st
+    from datetime import datetime
+    from fpdf import FPDF
+
+    # Function to format the chat history into a PDF
+    def format_messages_for_pdf(messages):
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        
+        # Set font for the header
+        pdf.set_font("Arial", 'B', 16)
+        pdf.cell(0, 10, "Summary Report", ln=True, align='C')
+        
+        # Add date
+        date_str = f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        pdf.set_font("Arial", size=12)
+        pdf.cell(0, 10, date_str, ln=True, align='C')
+        pdf.ln(10)  # Add some space after the date
+
+        # Process each message and add it to the PDF
+        for i in range(0, len(messages), 2):
+            user_msg = messages[i]
+            if user_msg["role"] == "user":
+                pdf.set_font("Arial", 'B', 14)
+                question = f"Question {i // 2 + 1}:"
+                pdf.cell(0, 10, question, ln=True)
+                pdf.set_font("Arial", size=12)
+                pdf.multi_cell(0, 10, user_msg['content'])
+                pdf.ln(5)
+
+            # Ensure there's a corresponding assistant response
+            if i + 1 < len(messages):
+                assistant_msg = messages[i + 1]
+                if assistant_msg["role"] == "assistant":
+                    pdf.set_font("Arial", 'B', 14)
+                    response_header = "Summary:"
+                    pdf.cell(0, 10, response_header, ln=True)
+                    pdf.set_font("Arial", size=12)
+                    pdf.multi_cell(0, 10, assistant_msg['content'])
+                    pdf.ln(10)
+
+        return pdf.output(dest='S').encode('latin1')
+
+    # Format messages for the PDF file
     if st.session_state.messages:
-        messages_str = format_messages_for_text(st.session_state.messages)
+        messages_bytes = format_messages_for_pdf(st.session_state.messages)
 
-        # Convert the string to bytes
-        messages_bytes = messages_str.encode("utf-8")
-
-        # Create a download button for the text file
+        # Create a download button for the PDF file
         st.sidebar.download_button(
-            label="Download Chat History as Text File",
+            label="Download Summary Report",
             data=messages_bytes,
-            file_name="chat_history.txt",
-            mime="text/plain",
+            file_name="chat_history.pdf",
+            mime="application/pdf",
         )
     else:
         st.write("No messages stored yet.")
+
+    # import streamlit as st
+    # from datetime import datetime
+
+    # # Function to format the chat history into a markdown string
+    # def format_messages_for_markdown(messages):
+    #     formatted = []
+    #     # Add a header and date to the markdown
+    #     header = "# Chat History Report"
+    #     date_str = f"**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    #     formatted.append(header)
+    #     formatted.append(date_str)
+    #     formatted.append("\n")
+
+    #     # Process each message and format as markdown sections
+    #     for i in range(0, len(messages), 2):
+    #         user_msg = messages[i]
+    #         if user_msg["role"] == "user":
+    #             question = f"## Question {i // 2 + 1}\n{user_msg['content']}"
+    #             formatted.append(question)
+
+    #         # Ensure there's a corresponding assistant response
+    #         if i + 1 < len(messages):
+    #             assistant_msg = messages[i + 1]
+    #             if assistant_msg["role"] == "assistant":
+    #                 response = f"### Response\n{assistant_msg['content']}"
+    #                 formatted.append(response)
+                    
+    #         formatted.append("\n")
+
+    #     return "\n".join(formatted)
+
+    # # Format messages for the markdown file
+    # if st.session_state.messages:
+    #     messages_str = format_messages_for_markdown(st.session_state.messages)
+
+    #     # Convert the string to bytes
+    #     messages_bytes = messages_str.encode("utf-8")
+
+    #     # Create a download button for the markdown file
+    #     st.sidebar.download_button(
+    #         label="Download Chat History as Markdown File",
+    #         data=messages_bytes,
+    #         file_name="chat_history.md",
+    #         mime="text/markdown",
+    #     )
+    # else:
+    #     st.write("No messages stored yet.")
+
 
 elif tab == "View Documents":
     st.title("Document Viewer")
