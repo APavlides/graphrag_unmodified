@@ -54,13 +54,13 @@ if tab == "Search Documents":
         # Init questions
 
         user_q_list = [{"question": "What is the patient's name, age and date of birth, if known?", "type": "local"},
-                       {"question": "Who does the patient live with if known", "type": "local"}]#,
-                    #    {"question": "What is the patient's early development history if known i.e. traumas, significant events, what school they went to.", "type": "global"},
-                    #    {"question": "Why is the patient coming to the clinic?", "type": "global"},
-                    #    {"question": "Have social services been involved or has the patient had other early help", "type": "global"},
-                    #    {"question": "What is the patient's condition history.", "type": "global"},
-                    #    {"question": "What drugs has the patient been prescribed previously if known", "type": "local"},
-                    #    {"question": "What does the patient want?", "type": "global"} ]
+                       {"question": "Who does the patient live with if known", "type": "local"},
+                       {"question": "What is the patient's early development history if known i.e. traumas, significant events, what school they went to.", "type": "global"},
+                       {"question": "Why is the patient coming to the clinic?", "type": "global"},
+                       {"question": "Have social services been involved or has the patient had other early help", "type": "global"},
+                       {"question": "What is the patient's condition history.", "type": "global"},
+                       {"question": "What drugs has the patient been prescribed previously if known", "type": "local"},
+                       {"question": "What does the patient want?", "type": "global"} ]
 
         for q in user_q_list:
 
