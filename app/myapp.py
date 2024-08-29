@@ -43,7 +43,7 @@ Local Search focuses on a specific subgraph or a local neighborhood of nodes wit
 
 Global Search is used when the query requires a broad understanding and connections from various parts of the graph. It’s useful for queries that are not highly specific and benefit from a wider context. Queries such as “Explain what treatments have been tried and has anything worked?”\n
 
-Note: You will find that you get a Local and Global response for a given question, but for a question like “Explain what treatments have been tried and has anything worked? you will get a breader answer if using Global search than Local search. Similarly, for a specific question about date of birth you may or may not get an answer with Global search, because a Local search is more appropriate. 
+Note: You will find that you get a Local and Global response for a given question, but for a question like “Explain what treatments have been tried and has anything worked? you will get a better answer if using Global search than Local search. Similarly, for a specific question about date of birth you may or may not get an answer with Global search, because a Local search is more appropriate. 
 """
 
     # Graphrag search type
