@@ -4,6 +4,8 @@ from global_query import execute_global_query
 from local_query import execute_local_query
 import asyncio
 import os
+from datetime import datetime
+from fpdf import FPDF
 
 
 if "run_once" not in st.session_state:
@@ -36,8 +38,18 @@ if tab == "Search Documents":
     # Adding a title to the main area
     st.title("Q&A Patient History")
 
+    help_text = """Global Search vs. Local Search in GraphRAG \n
+Local Search focuses on a specific subgraph or a local neighborhood of nodes within the knowledge graph. It is well-suited for answering questions that require an understanding of specific entities mentioned in the input documents (e.g., “When was John Doe born?”).
+
+Global Search is used when the query requires a broad understanding and connections from various parts of the graph. It’s useful for queries that are not highly specific and benefit from a wider context. Queries such as “Explain what treatments have been tried and has anything worked?”\n
+
+Note: You will find that you get a Local and Global response for a given question, but for a question like “Explain what treatments have been tried and has anything worked? you will get a breader answer if using Global search than Local search. Similarly, for a specific question about date of birth you may or may not get an answer with Global search, because a Local search is more appropriate. 
+"""
+
     # Graphrag search type
-    search_type = st.sidebar.radio("Type of Search", ["Global", "Local"])
+    search_type = st.sidebar.radio(
+        "Type of Search", ["Global", "Local"], help=help_text
+    )
 
     # Initialize chat history
     if "messages" not in st.session_state:
@@ -53,14 +65,28 @@ if tab == "Search Documents":
 
         # Init questions
 
-        user_q_list = [{"question": "What is the patient's name, age and date of birth, if known?", "type": "local"},
-                       {"question": "Who does the patient live with if known", "type": "local"},
-                       {"question": "What is the patient's early development history if known i.e. traumas, significant events, what school they went to.", "type": "global"},
-                       {"question": "Why is the patient coming to the clinic?", "type": "global"},
-                       {"question": "Have social services been involved or has the patient had other early help", "type": "global"},
-                       {"question": "What is the patient's condition history.", "type": "global"},
-                       {"question": "What drugs has the patient been prescribed previously if known", "type": "local"},
-                       {"question": "What does the patient want?", "type": "global"} ]
+        user_q_list = [
+            {
+                "question": "What is the patient's name, age and date of birth, if known?",
+                "type": "local",
+            },
+            {"question": "Who does the patient live with if known", "type": "local"},
+            {
+                "question": "What is the patient's early development history if known i.e. traumas, significant events, what school they went to.",
+                "type": "global",
+            },
+            {"question": "Why is the patient coming to the clinic?", "type": "global"},
+            {
+                "question": "Have social services been involved or has the patient had other early help",
+                "type": "global",
+            },
+            {"question": "What is the patient's condition history.", "type": "global"},
+            {
+                "question": "What drugs has the patient been prescribed previously if known",
+                "type": "local",
+            },
+            {"question": "What does the patient want?", "type": "global"},
+        ]
 
         for q in user_q_list:
 
@@ -150,49 +176,46 @@ if tab == "Search Documents":
     #     )
     # else:
     #     st.write("No messages stored yet.")
-    import streamlit as st
-    from datetime import datetime
-    from fpdf import FPDF
 
     # Function to format the chat history into a PDF
     def format_messages_for_pdf(messages):
         pdf = FPDF()
         pdf.add_page()
         pdf.set_auto_page_break(auto=True, margin=15)
-        
+
         # Set font for the header
-        pdf.set_font("Arial", 'B', 16)
-        pdf.cell(0, 10, "Summary Report", ln=True, align='C')
-        
+        pdf.set_font("Arial", "B", 16)
+        pdf.cell(0, 10, "Summary Report", ln=True, align="C")
+
         # Add date
         date_str = f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         pdf.set_font("Arial", size=12)
-        pdf.cell(0, 10, date_str, ln=True, align='C')
+        pdf.cell(0, 10, date_str, ln=True, align="C")
         pdf.ln(10)  # Add some space after the date
 
         # Process each message and add it to the PDF
         for i in range(0, len(messages), 2):
             user_msg = messages[i]
             if user_msg["role"] == "user":
-                pdf.set_font("Arial", 'B', 14)
+                pdf.set_font("Arial", "B", 14)
                 question = f"Question {i // 2 + 1}:"
                 pdf.cell(0, 10, question, ln=True)
                 pdf.set_font("Arial", size=12)
-                pdf.multi_cell(0, 10, user_msg['content'])
+                pdf.multi_cell(0, 10, user_msg["content"])
                 pdf.ln(5)
 
             # Ensure there's a corresponding assistant response
             if i + 1 < len(messages):
                 assistant_msg = messages[i + 1]
                 if assistant_msg["role"] == "assistant":
-                    pdf.set_font("Arial", 'B', 14)
+                    pdf.set_font("Arial", "B", 14)
                     response_header = "Summary:"
                     pdf.cell(0, 10, response_header, ln=True)
                     pdf.set_font("Arial", size=12)
-                    pdf.multi_cell(0, 10, assistant_msg['content'])
+                    pdf.multi_cell(0, 10, assistant_msg["content"])
                     pdf.ln(10)
 
-        return pdf.output(dest='S').encode('latin1')
+        return pdf.output(dest="S").encode("latin1")
 
     # Format messages for the PDF file
     if st.session_state.messages:
@@ -234,7 +257,7 @@ if tab == "Search Documents":
     #             if assistant_msg["role"] == "assistant":
     #                 response = f"### Response\n{assistant_msg['content']}"
     #                 formatted.append(response)
-                    
+
     #         formatted.append("\n")
 
     #     return "\n".join(formatted)
